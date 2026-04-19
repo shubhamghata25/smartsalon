@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C96A;
+  --cream: #F5F0E8;
+  --charcoal: #1A1A1A;
+  --muted: #9B8B7A;
+  --accent: #8B4513;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: #0a0a0a; color: #F5F0E8; font-family: 'Lora', serif; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(201,168,76,0.5); }
+
+.gold-line { width: 40px; height: 1px; background: var(--gold); display: inline-block; }
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #C9A84C, #E8C96A, #A07A30);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(201,168,76,0.13);
+}
+
+.salon-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(201,168,76,0.2);
+  color: #F5F0E8;
+  padding: 12px 16px;
+  border-radius: 4px;
+  width: 100%;
+  font-family: 'Lora', serif;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.salon-input:focus { border-color: #C9A84C; }
+.salon-input::placeholder { color: #9B8B7A; }
+
+.btn-gold {
+  background: linear-gradient(135deg, #C9A84C, #8B4513);
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(201,168,76,0.4); }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-outline {
+  background: transparent;
+  color: #C9A84C;
+  border: 1px solid rgba(201,168,76,0.55);
+  padding: 12px 28px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+.btn-outline:hover { background: rgba(201,168,76,0.08); border-color: #C9A84C; }
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.badge { padding: 3px 10px; border-radius: 2px; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 2px; font-weight: 700; }
+.badge-gold { background: #C9A84C; color: #0a0a0a; }
+.badge-green { background: #2E7D32; color: #fff; }
+.badge-red { background: #C62828; color: #fff; }
+.badge-muted { background: rgba(92,61,46,0.6); color: #F5F0E8; }
+
+.salon-table { width: 100%; border-collapse: collapse; }
+.salon-table th { padding: 13px 18px; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-align: left; border-bottom: 1px solid rgba(201,168,76,0.1); }
+.salon-table td { padding: 14px 18px; font-family: 'Lora', serif; font-size: 13px; border-bottom: 1px solid rgba(201,168,76,0.05); }
+
+@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes particleDrift {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: .6; }
+  90% { opacity: .25; }
+  100% { transform: translateY(-130px) translateX(18px); opacity: 0; }
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lineGrow { from { width: 0; } to { width: 48px; } }
+@keyframes shimmerPulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+@keyframes pulsing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(201,168,76,0); }
+}
+
+@layer utilities {
+  .font-cinzel { font-family: 'Cinzel', serif; }
+  .font-playfair { font-family: 'Playfair Display', serif; }
+  .font-lora { font-family: 'Lora', serif; }
+}

@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@smartsalon_api_url",
+    "NEXT_PUBLIC_RAZORPAY_KEY": "@smartsalon_razorpay_key",
+    "NEXT_PUBLIC_WHATSAPP_NUMBER": "@smartsalon_whatsapp",
+    "NEXT_PUBLIC_UPI_ID": "@smartsalon_upi_id"
+  }
+}
