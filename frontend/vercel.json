@@ -3,9 +3,9 @@
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "env": {
-    "NEXT_PUBLIC_API_URL": "@smartsalon_api_url",
-    "NEXT_PUBLIC_RAZORPAY_KEY": "@smartsalon_razorpay_key",
-    "NEXT_PUBLIC_WHATSAPP_NUMBER": "@smartsalon_whatsapp",
-    "NEXT_PUBLIC_UPI_ID": "@smartsalon_upi_id"
+    "NEXT_PUBLIC_API_URL": "https://smartsalon-api-iiss.onrender.com/api",
+    "NEXT_PUBLIC_RAZORPAY_KEY": "rzp_test_ScxhxrM7ed8Kj2",
+    "NEXT_PUBLIC_WHATSAPP_NUMBER": "919876543210",
+    "NEXT_PUBLIC_UPI_ID": "smartsalon@upi"
   }
 }
