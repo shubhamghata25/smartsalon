@@ -10,7 +10,7 @@ TO:
     autoPlay muted loop playsInline
     style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}
   >
-    <source src="/hero-video.mp4" type="video/mp4" />
+    <source src="/Luxury_Salon_Hero_Video_Generation.mp4" type="video/mp4" />
   </video>
 
 Then delete the entire first useEffect block (the hero canvas animation).
