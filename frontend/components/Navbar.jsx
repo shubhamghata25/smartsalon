@@ -1,3 +1,4 @@
+"use client";
 /**
  * FILE: frontend/components/Navbar.jsx  [MODIFIED]
  * Change: salon name and logo now loaded from /api/settings (dynamic)

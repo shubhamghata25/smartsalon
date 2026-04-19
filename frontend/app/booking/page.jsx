@@ -1,3 +1,4 @@
+"use client";
 /**
  * FILE: frontend/app/booking/page.jsx  [MODIFIED]
  *
