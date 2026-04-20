@@ -8,18 +8,18 @@ export default function Footer() {
   const [settings, setSettings] = useState({
     salon_name:      "Lonaz Luxe Salon",
     footer_tagline:  "Where Beauty Meets Luxury",
-    footer_address:  "123 Style Street, Mumbai 400050",
-    footer_phone:    "+91 98765 43210",
+    footer_address:  "Dabha chowk, Nagpur 440023",
+    footer_phone:    "+91 90968 63511",
     footer_email:    "hello@lonazluxe.in",
-    instagram_url:   "https://instagram.com/lonazluxe",
-    whatsapp_number: "919876543210",
+    instagram_url:   "https://www.instagram.com/lonaznagpur",
+    whatsapp_number: "919096863511",
   });
 
   useEffect(() => {
     settingsAPI.get().then(r => setSettings(s => ({ ...s, ...r.data }))).catch(() => {});
   }, []);
 
-  const whatsapp = settings.whatsapp_number || "919876543210";
+  const whatsapp = settings.whatsapp_number || "919096863511";
 
   return (
     <footer className="bg-forest-dark border-t border-gold/10 pt-14 pb-6">
