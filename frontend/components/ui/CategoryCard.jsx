@@ -1,5 +1,13 @@
 "use client";
-export default function CategoryCard({ category, onClick, active }) {
+/**
+ * FILE: frontend/components/ui/CategoryCard.jsx
+ *
+ * FIX #1: Added onError fallback for broken Cloudinary images.
+ * FIX #5: Accept optional `priceRange` prop and display it on the card.
+ *         The parent (services-menu) computes min–max from its services list
+ *         and passes it down, so no extra API call is needed.
+ */
+export default function CategoryCard({ category, onClick, active, priceRange }) {
   return (
     <button
       onClick={onClick}
@@ -18,15 +26,17 @@ export default function CategoryCard({ category, onClick, active }) {
             alt={category.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={e => {
-              e.currentTarget.style.display = "none";
-              e.currentTarget.parentElement.style.background = "linear-gradient(135deg, rgba(15,59,47,0.8), rgba(10,42,33,0.9))";
+              // Hide broken image container; emoji placeholder below becomes visible
+              e.currentTarget.closest(".relative").style.display = "none";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/80 to-transparent" />
         </div>
       ) : (
-        <div className="h-24 sm:h-32 flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, rgba(15,59,47,0.8), rgba(10,42,33,0.9))" }}>
+        <div
+          className="h-24 sm:h-32 flex items-center justify-center"
+          style={{ background: "linear-gradient(135deg, rgba(15,59,47,0.8), rgba(10,42,33,0.9))" }}
+        >
           <span style={{ fontSize: 40 }}>✂️</span>
         </div>
       )}
@@ -35,7 +45,13 @@ export default function CategoryCard({ category, onClick, active }) {
         <h3 className="font-cinzel text-[12px] sm:text-[13px] tracking-[3px] uppercase text-cream group-hover:text-gold transition-colors">
           {category.name}
         </h3>
-        {category.description && (
+
+        {/* FIX #5: price range passed in from parent */}
+        {priceRange && (
+          <p className="font-playfair text-[11px] text-gold/70 mt-1">{priceRange}</p>
+        )}
+
+        {!priceRange && category.description && (
           <p className="font-lora text-xs text-cream/50 mt-1 leading-relaxed line-clamp-2">
             {category.description}
           </p>

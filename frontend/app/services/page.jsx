@@ -33,10 +33,7 @@ export default function ServicesPage() {
   // Filter by active tab
   const filtered = activeTab === "all"
     ? services
-    : services.filter(s => {
-        const cat = categories.find(c => c.id === s.category_id);
-        return cat?.name?.toLowerCase() === activeTab.toLowerCase();
-      });
+    : services.filter(s => s.category_id === activeTab);
 
   // Toggle expand service and lazy-load sub-services
   const toggleService = useCallback(async (svcId) => {
@@ -55,9 +52,10 @@ export default function ServicesPage() {
     }
   }, [expanded, subMap]);
 
+  // Tabs use category id (not name) so filter is exact match
   const tabs = [
     { id: "all", label: "All Services" },
-    ...categories.map(c => ({ id: c.name.toLowerCase(), label: c.name })),
+    ...categories.map(c => ({ id: c.id, label: c.name })),
   ];
 
   return (
