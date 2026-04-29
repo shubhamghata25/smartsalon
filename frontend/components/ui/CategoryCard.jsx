@@ -17,6 +17,10 @@ export default function CategoryCard({ category, onClick, active }) {
             src={category.image_url}
             alt={category.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={e => {
+              e.currentTarget.style.display = "none";
+              e.currentTarget.parentElement.style.background = "linear-gradient(135deg, rgba(15,59,47,0.8), rgba(10,42,33,0.9))";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/80 to-transparent" />
         </div>

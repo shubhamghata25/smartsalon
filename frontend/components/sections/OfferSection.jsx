@@ -24,13 +24,21 @@ export default function OfferSection({ offers = [] }) {
             <div key={offer.id}
               className="luxury-card rounded-sm overflow-hidden group flex flex-col"
             >
-              {offer.image_url && (
-                <div className="relative h-44 overflow-hidden">
-                  <img src={offer.image_url} alt={offer.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/80 to-transparent" />
-                </div>
-              )}
+              <div className="relative h-44 overflow-hidden bg-gradient-to-br from-forest-dark to-forest-dark/80">
+                {offer.image_url ? (
+                  <img
+                    src={offer.image_url}
+                    alt={offer.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={e => { e.currentTarget.style.display = "none"; }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Tag size={36} className="text-gold/20" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/80 to-transparent pointer-events-none" />
+              </div>
               <div className="p-5 flex flex-col flex-1">
                 {offer.discount && (
                   <span className="badge badge-gold mb-3 w-fit text-[9px]">

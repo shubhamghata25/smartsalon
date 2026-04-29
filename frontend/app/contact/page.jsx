@@ -51,8 +51,8 @@ export default function ContactPage() {
               <h3 className="font-playfair text-2xl text-cream mb-6">Find Us</h3>
               <div className="space-y-5">
                 {[
-                  { icon: <MapPin size={18} className="text-gold mt-0.5" />, title: "Address", content: "Ayra realties building, near white house, near Taj Tayers, Dabha, Vayusena Nagar, Nagpur, Maharashtra 440023" },
-                  { icon: <Phone size={18} className="text-gold" />, title: "Phone", content: "+91 90968 63511 ", href: "tel:+919096863511" },
+                  { icon: <MapPin size={18} className="text-gold mt-0.5" />, title: "Address", content: "123 Style Street, Bandra West\nMumbai 400050, Maharashtra" },
+                  { icon: <Phone size={18} className="text-gold" />, title: "Phone", content: "+91 98765 43210", href: "tel:+919876543210" },
                   { icon: <Mail size={18} className="text-gold" />, title: "Email", content: "hello@smartsalon.in", href: "mailto:hello@smartsalon.in" },
                 ].map(({ icon, title, content, href }) => (
                   <div key={title} className="flex items-start gap-4">
@@ -75,9 +75,9 @@ export default function ContactPage() {
               <h4 className="font-cinzel text-[11px] tracking-[3px] text-gold mb-4 uppercase">Opening Hours</h4>
               <div className="space-y-2">
                 {[
-                  ["Monday – Friday", "10:00 AM – 9:00 PM"],
-                  ["Saturday", "10:00 AM – 9:00 PM"],
-                  ["Sunday", "10:00 AM – 9:00 PM"],
+                  ["Monday – Friday", "9:00 AM – 7:00 PM"],
+                  ["Saturday", "9:00 AM – 8:00 PM"],
+                  ["Sunday", "10:00 AM – 5:00 PM"],
                 ].map(([day, hours]) => (
                   <div key={day} className="flex justify-between">
                     <span className="font-lora text-sm text-muted">{day}</span>
@@ -147,17 +147,21 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Map */}
-        <div className="mt-12 glass-card rounded-sm overflow-hidden" style={{ height: 380 }}>
+        {/* Map — Google Maps embed (set NEXT_PUBLIC_MAPS_EMBED_URL in Vercel env vars) */}
+        <div className="mt-12 rounded-sm overflow-hidden"
+          style={{ height: "clamp(280px, 40vw, 420px)", border: "1px solid rgba(201,168,76,0.15)" }}>
           <iframe
-            src={process.env.NEXT_PUBLIC_MAPS_EMBED_URL || "https://www.google.com/maps/place/LONAZ+LUXE+SALON/@21.1644078,79.0152853,17z/data=!3m1!4b1!4m6!3m5!1s0x3bd4ebddc8468447:0xb44664c2abd0a3e3!8m2!3d21.1644028!4d79.0178602!16s%2Fg%2F11yh85963p?entry=ttu&g_ep=EgoyMDI2MDQxNS4wIKXMDSoASAFQAw%3D%3D"}
+            src={
+              process.env.NEXT_PUBLIC_MAPS_EMBED_URL ||
+              "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3768.2833398576494!2d72.83657531490244!3d19.136031787047!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b63ac4c2c2c3%3A0x4a4f0b0b0b0b0b0b!2sMumbai%2C%20Maharashtra%2C%20India!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+            }
             width="100%"
             height="100%"
-            style={{ border: 0 }}
+            style={{ border: 0, display: "block" }}
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="SmartSalon Location"
+            title="Salon Location Map"
           />
         </div>
       </div>

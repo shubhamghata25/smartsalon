@@ -6,6 +6,7 @@ import {
   contactsAPI, careersAPI, coursesAPI, offersAPI, settingsAPI,
   videosAPI, uploadAPI, categoriesAPI,
 } from "@/lib/api";
+import HeroMediaSection from "@/components/admin/HeroMediaSection";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import {
@@ -36,8 +37,8 @@ const SC = { confirmed:"#2E7D32", pending:"#9B8B7A", completed:"#C9A84C",
              new:"#C9A84C", reviewed:"#9B8B7A", shortlisted:"#2E7D32", rejected:"#C62828" };
 
 const EMPTY = {
-  svc:  { name:"", description:"", price:"", duration:"", icon:"✂️", category:"", category_id:"", image_url:"", sort_order:0 },
-  sub:  { service_id:"", name:"", price:"", duration:"", description:"", image_url:"", sort_order:0 },
+  svc:  { name:"", description:"", price:"", duration:"", slot_duration:"30", icon:"✂️", category:"", category_id:"", image_url:"", sort_order:0 },
+  sub:  { service_id:"", name:"", price:"", duration:"", discount_price:"", description:"", image_url:"", sort_order:0 },
   cat:  { name:"", description:"", image_url:"", sort_order:0 },
   crs:  { title:"", description:"", price:"", offer_price:"", duration_hrs:"", lesson_count:"", tag:"", video_url:"" },
   off:  { title:"", description:"", discount:"", image_url:"", expiry_date:"" },
@@ -67,6 +68,7 @@ export default function AdminPage() {
   const [jobs,         setJobs]         = useState([]);
   const [videos,       setVideos]       = useState([]);
   const [siteSettings, setSiteSettings] = useState({});
+  const [heroMedia,    setHeroMedia]    = useState({ url: "", type: "image" });
 
   // Form states
   const [forms,     setForms]     = useState(EMPTY);
@@ -139,6 +141,7 @@ export default function AdminPage() {
         case "settings": {
           const { data } = await settingsAPI.get();
           setSiteSettings(data);
+          setHeroMedia({ url: data.hero_media_url || "", type: data.hero_media_type || "image" });
           setF("set", { salon_name:data.salon_name||"", upi_id:data.upi_id||"", whatsapp_number:data.whatsapp_number||"",
             footer_tagline:data.footer_tagline||"", footer_address:data.footer_address||"",
             footer_phone:data.footer_phone||"", footer_email:data.footer_email||"",
@@ -418,6 +421,7 @@ export default function AdminPage() {
                   <FI label="Name" fKey="svc" subKey="name" required ph="Service name"/>
                   <FI label="Price ₹" fKey="svc" subKey="price" type="number" ph="599"/>
                   <FI label="Duration (min)" fKey="svc" subKey="duration" type="number" ph="45"/>
+                  <FI label="Slot Duration (min)" fKey="svc" subKey="slot_duration" type="number" ph="30" />
                   <FI label="Icon (emoji)" fKey="svc" subKey="icon" ph="✂️"/>
                   <div>
                     <label className="font-cinzel text-[9px] tracking-[2px] text-gold/50 block mb-1.5 uppercase">Category</label>
@@ -443,7 +447,7 @@ export default function AdminPage() {
                       </div>
                     </div>
                     <div style={{display:"flex",gap:6}}>
-                      <EditBtn onClick={()=>toggleForm("svc",s.id,{name:s.name,description:s.description||"",price:s.price,duration:s.duration,icon:s.icon||"✂️",category:s.category||"",category_id:s.category_id||"",image_url:s.image_url||"",sort_order:s.sort_order||0})}/>
+                      <EditBtn onClick={()=>toggleForm("svc",s.id,{name:s.name,description:s.description||"",price:s.price,duration:s.duration,slot_duration:s.slot_duration||30,icon:s.icon||"✂️",category:s.category||"",category_id:s.category_id||"",image_url:s.image_url||"",sort_order:s.sort_order||0})}/>
                       <DelBtn onClick={()=>servicesAPI.delete(s.id).then(()=>{setServices(p=>p.filter(x=>x.id!==s.id));toast.success("Removed")}).catch(()=>toast.error("Failed"))}/>
                     </div>
                   </div>
@@ -473,6 +477,7 @@ export default function AdminPage() {
                   </div>
                   <FI label="Sub-Service Name" fKey="sub" subKey="name" required ph="e.g. Fade Cut"/>
                   <FI label="Price ₹" fKey="sub" subKey="price" type="number" ph="499"/>
+                  <FI label="Discount Price ₹ (optional)" fKey="sub" subKey="discount_price" type="number" ph="399"/>
                   <FI label="Duration (min)" fKey="sub" subKey="duration" type="number" ph="30"/>
                   <FI label="Sort Order" fKey="sub" subKey="sort_order" type="number"/>
                   <div className="sm:col-span-2"><FTA label="Description" fKey="sub" subKey="description" ph="Style details, what's included..."/></div>
@@ -481,16 +486,17 @@ export default function AdminPage() {
               )}
               <div className="glass-card rounded-sm overflow-x-auto">
                 <table className="salon-table">
-                  <thead><tr>{["Parent","Name","Price","Duration","Action"].map(h=><th key={h}>{h}</th>)}</tr></thead>
+                  <thead><tr>{["Parent","Name","Price","Discount","Duration","Action"].map(h=><th key={h}>{h}</th>)}</tr></thead>
                   <tbody>
                     {subSvcs.map(ss=>(
                       <tr key={ss.id}>
                         <td className="text-gold/50 text-sm">{ss.service_name}</td>
                         <td className="text-cream text-sm">{ss.name}</td>
                         <td className="text-gold font-bold">₹{ss.price}</td>
+                        <td className="text-green-400 text-xs">{ss.discount_price?`₹${ss.discount_price}`:"—"}</td>
                         <td className="text-gold/50 text-xs">{ss.duration?`${ss.duration} min`:"—"}</td>
                         <td><div style={{display:"flex",gap:6}}>
-                          <EditBtn onClick={()=>toggleForm("sub",ss.id,{service_id:ss.service_id,name:ss.name,price:ss.price,duration:ss.duration||"",description:ss.description||"",image_url:ss.image_url||"",sort_order:ss.sort_order||0})}/>
+                          <EditBtn onClick={()=>toggleForm("sub",ss.id,{service_id:ss.service_id,name:ss.name,price:ss.price,duration:ss.duration||"",discount_price:ss.discount_price||"",description:ss.description||"",image_url:ss.image_url||"",sort_order:ss.sort_order||0})}/>
                           <DelBtn onClick={()=>subServicesAPI.delete(ss.id).then(()=>{setSubSvcs(p=>p.filter(x=>x.id!==ss.id));toast.success("Removed")}).catch(()=>toast.error("Failed"))}/>
                         </div></td>
                       </tr>
@@ -838,7 +844,23 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <button onClick={saveSettings} disabled={savingSet} className="btn-gold flex items-center gap-2">
+              {/* Hero Background Media */}
+              <div className="mt-6">
+                <HeroMediaSection
+                  currentUrl={heroMedia.url}
+                  currentType={heroMedia.type}
+                  onSaved={(data) => {
+                    if (data) {
+                      setHeroMedia({ url: data.url, type: data.type });
+                    } else {
+                      setHeroMedia({ url: "", type: "image" });
+                    }
+                    toast.success("Hero media saved!");
+                  }}
+                />
+              </div>
+
+              <button onClick={saveSettings} disabled={savingSet} className="btn-gold flex items-center gap-2 mt-6">
                 {savingSet?<Loader size={14} className="animate-spin"/>:null}
                 {savingSet?"Saving...":"Save All Settings"}
               </button>

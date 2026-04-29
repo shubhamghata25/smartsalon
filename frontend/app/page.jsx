@@ -23,17 +23,25 @@ export default function HomePage() {
   const [videos,     setVideos]     = useState([]);
   const [categories, setCategories] = useState([]);
   const [salonName,  setSalonName]  = useState("Lonaz Luxe Salon");
+  const [heroMedia,  setHeroMedia]  = useState(null); // { type: 'image'|'video', url: '...' }
 
   useEffect(() => {
     servicesAPI.list().then(r => setServices(r.data.slice(0, 6))).catch(() => {});
     offersAPI.list().then(r => setOffers(r.data)).catch(() => {});
     videosAPI.list().then(r => setVideos(r.data)).catch(() => {});
     categoriesAPI.list().then(r => setCategories(r.data)).catch(() => {});
-    settingsAPI.get().then(r => { if (r.data.salon_name) setSalonName(r.data.salon_name); }).catch(() => {});
+    settingsAPI.get().then(r => {
+      if (r.data.salon_name) setSalonName(r.data.salon_name);
+      // Load hero media from settings keys (fast, no extra request)
+      if (r.data.hero_media_url) {
+        setHeroMedia({ url: r.data.hero_media_url, type: r.data.hero_media_type || "image" });
+      }
+    }).catch(() => {});
   }, []);
 
-  /* ── HERO CANVAS ─────────────────────────────────────────── */
+  /* ── HERO CANVAS — only shown when no admin media ────────────────────────── */
   useEffect(() => {
+    if (heroMedia?.url) return; // skip canvas if media exists
     const canvas = heroRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -79,10 +87,6 @@ export default function HomePage() {
       g1.addColorStop(0, "rgba(15,59,47,.6)"); g1.addColorStop(1, "rgba(10,42,33,0)");
       ctx.fillStyle = g1; ctx.fillRect(0,0,W,H);
 
-      const g2 = ctx.createRadialGradient(W*.75,H*.55,0,W*.75,H*.55,W*.4);
-      g2.addColorStop(0,"rgba(201,168,76,.04)"); g2.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle = g2; ctx.fillRect(0,0,W,H);
-
       strands.forEach(s => {
         s.y += s.speed;
         if (s.y > H + s.len) s.y = -s.len;
@@ -93,24 +97,17 @@ export default function HomePage() {
         ctx.stroke(); ctx.restore();
       });
 
-      [
-        {xr:.15,yr:.28,sz:14,sp:.003,al:.10},
-        {xr:.78,yr:.18,sz:22,sp:.002,al:.07},
-        {xr:.88,yr:.72,sz:11,sp:.004,al:.08},
-        {xr:.10,yr:.78,sz:18,sp:.0025,al:.06},
+      [{xr:.15,yr:.28,sz:14,sp:.003,al:.10},{xr:.78,yr:.18,sz:22,sp:.002,al:.07},
+       {xr:.88,yr:.72,sz:11,sp:.004,al:.08},{xr:.10,yr:.78,sz:18,sp:.0025,al:.06}
       ].forEach((sp,i) => drawScissors(sp.xr*W, sp.yr*H, sp.sz, Math.sin(t*sp.sp+i)*.3, sp.al));
 
-      for(let i=0;i<3;i++){
-        ctx.save(); ctx.globalAlpha=.04-i*.01; ctx.strokeStyle="#C9A84C"; ctx.lineWidth=.5;
-        ctx.beginPath(); ctx.arc(W*.72,H*.5,44+i*20+Math.sin(t*.02+i)*6,0,Math.PI*2); ctx.stroke(); ctx.restore();
-      }
       animId = requestAnimationFrame(frame);
     };
     frame();
     return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
-  }, []);
+  }, [heroMedia]);
 
-  /* ── ABOUT CANVAS ────────────────────────────────────────── */
+  /* ── ABOUT CANVAS ────────────────────────────────────────────────────────── */
   useEffect(() => {
     const canvas = aboutRef.current;
     if (!canvas) return;
@@ -132,10 +129,6 @@ export default function HomePage() {
         ctx.save(); ctx.globalAlpha=.2+Math.sin(at*d.speed*2+d.phase)*.15;
         ctx.fillStyle="#C9A84C"; ctx.beginPath(); ctx.arc(x,y,d.r,0,Math.PI*2); ctx.fill(); ctx.restore();
       });
-      for(let i=0;i<4;i++){
-        ctx.save(); ctx.globalAlpha=.05-i*.01; ctx.strokeStyle="#C9A84C"; ctx.lineWidth=.7;
-        ctx.beginPath(); ctx.arc(W/2,H/2,48+i*38+Math.sin(at+i*.7)*7,0,Math.PI*2); ctx.stroke(); ctx.restore();
-      }
       ctx.save(); ctx.translate(W/2,H/2); ctx.rotate(at*.18);
       ctx.globalAlpha=.12; ctx.strokeStyle="#C9A84C"; ctx.lineWidth=.9; ctx.lineCap="round";
       const s=30;
@@ -152,7 +145,7 @@ export default function HomePage() {
     return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
   }, []);
 
-  /* ── COUNTER ANIMATION ───────────────────────────────────── */
+  /* ── COUNTER ANIMATION ───────────────────────────────────────────────────── */
   useEffect(() => {
     const countTo = (id, target, suffix, delay) => {
       setTimeout(() => {
@@ -169,7 +162,7 @@ export default function HomePage() {
     }, 600);
   }, []);
 
-  /* ── CYCLING HEADLINE ────────────────────────────────────── */
+  /* ── CYCLING HEADLINE ────────────────────────────────────────────────────── */
   useEffect(() => {
     const words = ["Meets Craft","Defines You","Tells Your Story","Meets Craft"];
     let wi = 0;
@@ -186,7 +179,7 @@ export default function HomePage() {
     return ()=>clearInterval(iv);
   },[]);
 
-  /* ── PARTICLES ───────────────────────────────────────────── */
+  /* ── PARTICLES ───────────────────────────────────────────────────────────── */
   useEffect(() => {
     const container = document.getElementById("heroParticles"); if (!container) return;
     const spawn = () => {
@@ -226,17 +219,37 @@ export default function HomePage() {
         .svc-hover:hover{background:rgba(201,168,76,.05)!important;border-color:rgba(201,168,76,.35)!important;transform:translateY(-4px)}
         .svc-hover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);transform:scaleX(0);transition:transform .4s}
         .svc-hover:hover::after{transform:scaleX(1)}
+        .hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+        .hero-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
       `}</style>
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section style={{ position:"relative", height:"100vh", minHeight:580, maxHeight:820, overflow:"hidden", background:"#0a2a21" }}>
-        <canvas ref={heroRef} style={{ position:"absolute", inset:0, width:"100%", height:"100%", display:"block" }} />
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg,rgba(10,42,33,.75) 0%,rgba(15,59,47,.5) 50%,rgba(10,42,33,.65) 100%)" }} />
+
+        {/* Background: video > image > canvas */}
+        {heroMedia?.url && heroMedia.type === "video" ? (
+          <video
+            className="hero-bg-video"
+            src={heroMedia.url}
+            autoPlay muted loop playsInline
+            style={{ filter:"brightness(0.55)" }}
+          />
+        ) : heroMedia?.url && heroMedia.type === "image" ? (
+          <img
+            className="hero-bg-img"
+            src={heroMedia.url}
+            alt="Salon background"
+            style={{ filter:"brightness(0.5)" }}
+          />
+        ) : (
+          <canvas ref={heroRef} style={{ position:"absolute", inset:0, width:"100%", height:"100%", display:"block" }} />
+        )}
+
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg,rgba(10,42,33,.75) 0%,rgba(15,59,47,.4) 50%,rgba(10,42,33,.55) 100%)" }} />
         <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.02) 3px,rgba(0,0,0,.02) 4px)", pointerEvents:"none" }} />
         <div id="heroParticles" style={{ position:"absolute", inset:0, pointerEvents:"none" }} />
 
         <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 5%", paddingTop:70 }}>
-          {/* Eyebrow */}
           <div className="ha1" style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
             <span className="hero-line" style={{ height:1, background:"#C9A84C", display:"inline-block" }} />
             <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:4, color:"#C9A84C", textTransform:"uppercase" }}>
@@ -254,23 +267,19 @@ export default function HomePage() {
           </p>
 
           <div className="ha4" style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
-            <Link href="/booking" style={{ background:"linear-gradient(135deg,#C9A84C,#A07A30)", color:"#fff", padding:"13px 28px", fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:"2.5px", textTransform:"uppercase", textDecoration:"none", borderRadius:2, display:"inline-flex", alignItems:"center", gap:8, transition:"all .3s" }}
+            <Link href="/booking" style={{ background:"linear-gradient(135deg,#C9A84C,#A07A30)", color:"#fff", padding:"13px 28px", fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:"2.5px", textTransform:"uppercase", textDecoration:"none", borderRadius:2, display:"inline-flex", alignItems:"center", gap:8 }}
               onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 0 24px rgba(201,168,76,.6)"}}
               onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>
               Book Appointment <ArrowRight size={14} />
             </Link>
-            <Link href="/services-menu" style={{ background:"transparent", color:"rgba(245,240,232,.8)", border:"1px solid rgba(245,240,232,.25)", padding:"12px 24px", fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:"2px", textTransform:"uppercase", textDecoration:"none", borderRadius:2, transition:"all .3s" }}
+            <Link href="/services-menu" style={{ background:"transparent", color:"rgba(245,240,232,.8)", border:"1px solid rgba(245,240,232,.25)", padding:"12px 24px", fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:"2px", textTransform:"uppercase", textDecoration:"none", borderRadius:2 }}
               onMouseEnter={e=>{e.currentTarget.style.borderColor="#C9A84C";e.currentTarget.style.color="#C9A84C"}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(245,240,232,.25)";e.currentTarget.style.color="rgba(245,240,232,.8)"}}>
               Explore Services
             </Link>
-            <div className="play-pulse" style={{ width:44, height:44, borderRadius:"50%", border:"1px solid rgba(201,168,76,.5)", background:"rgba(201,168,76,.1)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }}>
-              <div style={{ width:0, height:0, borderStyle:"solid", borderWidth:"6px 0 6px 12px", borderColor:"transparent transparent transparent #C9A84C", marginLeft:3 }} />
-            </div>
           </div>
         </div>
 
-        {/* Side stats */}
         <div style={{ position:"absolute", right:"4%", top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", gap:2, animation:"fadeUp .8s 1.2s both" }}
           className="hidden sm:flex">
           {[{id:"cnt1",val:"0",lbl:"Happy Clients"},{id:"cnt2",val:"0",lbl:"Expert Stylists"},{id:"cnt3",val:"0",lbl:"Years Running"}].map(s=>(
@@ -281,7 +290,6 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Scroll hint */}
         <div style={{ position:"absolute", bottom:20, left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:6, opacity:.5 }}>
           <div style={{ width:1, height:28, background:"linear-gradient(180deg,rgba(201,168,76,.5),transparent)" }} />
           <span style={{ fontFamily:"'Cinzel',serif", fontSize:8, letterSpacing:"3px", color:"rgba(245,240,232,.3)", textTransform:"uppercase" }}>Scroll</span>
@@ -298,6 +306,9 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* ── OFFERS — now ABOVE categories ──────────────────────── */}
+      <OfferSection offers={offers} />
 
       {/* ── CATEGORIES ─────────────────────────────────────────── */}
       {categories.length > 0 && (
@@ -332,9 +343,6 @@ export default function HomePage() {
             <h2 className="font-playfair text-[clamp(24px,4vw,46px)] font-bold text-cream">
               Our <em className="text-gold">Services</em>
             </h2>
-            <p className="font-lora text-sm text-cream/50 mt-3 max-w-md mx-auto">
-              From a classic cut to a complete transformation — every service is a crafted experience.
-            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background:"rgba(201,168,76,.07)" }}>
             {displayServices.map((s,i)=>(
@@ -343,7 +351,15 @@ export default function HomePage() {
                 padding:"26px 22px", cursor:"pointer", position:"relative", overflow:"hidden", transition:"all .3s",
               }}>
                 <div style={{ fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:"3px", color:"rgba(201,168,76,.35)", marginBottom:12 }}>0{i+1}</div>
-                <div style={{ fontSize:30, marginBottom:10 }}>{s.icon}</div>
+                {s.image_url ? (
+                  <img
+                    src={s.image_url}
+                    alt={s.name}
+                    onError={e => { e.currentTarget.style.display="none"; e.currentTarget.nextSibling.style.display="block"; }}
+                    style={{ width:48, height:48, objectFit:"cover", borderRadius:4, marginBottom:10 }}
+                  />
+                ) : null}
+                <div style={{ fontSize:30, marginBottom:10, display: s.image_url ? "none" : "block" }}>{s.icon}</div>
                 <h3 style={{ fontFamily:"'Playfair Display',serif", fontSize:17, color:"#F5F0E8", marginBottom:5 }}>{s.name}</h3>
                 <p style={{ fontFamily:"'Lora',serif", fontSize:12, color:"rgba(245,240,232,.45)", lineHeight:1.6, marginBottom:12 }}>{s.description}</p>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -358,9 +374,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ── OFFERS ──────────────────────────────────────────────── */}
-      <OfferSection offers={offers} />
 
       {/* ── MARQUEE ─────────────────────────────────────────────── */}
       <div style={{ padding:"26px 0", overflow:"hidden", background:"rgba(10,42,33,.9)", borderTop:"1px solid rgba(201,168,76,.07)", borderBottom:"1px solid rgba(201,168,76,.07)" }}>
@@ -473,14 +486,6 @@ export default function HomePage() {
           <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap", marginBottom:48 }}>
             <Link href="/booking" className="btn-gold !px-10 !py-4">Schedule Now →</Link>
             <a href="tel:+919876543210" className="btn-outline !px-8 !py-4">Call Us</a>
-          </div>
-          <div style={{ display:"flex", justifyContent:"center", gap:"clamp(24px,5vw,56px)", flexWrap:"wrap" }}>
-            {[["5,000+","Happy Clients"],["4.9★","Average Rating"],["8+","Years Running"]].map(([v,l])=>(
-              <div key={l} className="text-center">
-                <div className="font-playfair text-[clamp(20px,3vw,30px)] font-bold text-gold">{v}</div>
-                <div style={{ fontFamily:"'Cinzel',serif", fontSize:9, letterSpacing:"2px", color:"rgba(245,240,232,.28)", textTransform:"uppercase", marginTop:3 }}>{l}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

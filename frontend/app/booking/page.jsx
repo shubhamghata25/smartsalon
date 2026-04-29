@@ -28,6 +28,7 @@ function BookingForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const preselectedService = searchParams.get("service");
+  const preselectedSub = searchParams.get("sub");
 
   const [step, setStep] = useState(1);
   const [services, setServices] = useState([]);
@@ -59,7 +60,10 @@ function BookingForm() {
       setServices(r.data);
       if (preselectedService) {
         const found = r.data.find(s => s.id === preselectedService);
-        if (found) { setSelectedService(found); setStep(2); }
+        if (found) {
+          setSelectedService(found);
+          setStep(2);
+        }
       }
     });
   }, [preselectedService]);
@@ -69,7 +73,14 @@ function BookingForm() {
     if (!selectedService) return;
     setSelectedSub(null);
     subServicesAPI.byService(selectedService.id)
-      .then(r => setSubServices(r.data))
+      .then(r => {
+        setSubServices(r.data);
+        // Pre-select sub from URL ?sub= param
+        if (preselectedSub) {
+          const found = r.data.find(s => s.id === preselectedSub);
+          if (found) setSelectedSub(found);
+        }
+      })
       .catch(() => setSubServices([]));
   }, [selectedService]);
 

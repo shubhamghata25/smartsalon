@@ -1,4 +1,10 @@
 "use client";
+/**
+ * FILE: frontend/components/Footer.jsx  [v4]
+ * - "Services" Quick Link → /services (the full services page)
+ * - Service name list items → link to /services with anchor
+ * - Settings loaded without caching
+ */
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MapPin, Phone, Mail, Instagram, MessageCircle } from "lucide-react";
@@ -8,18 +14,29 @@ export default function Footer() {
   const [settings, setSettings] = useState({
     salon_name:      "Lonaz Luxe Salon",
     footer_tagline:  "Where Beauty Meets Luxury",
-    footer_address:  "Dabha chowk, Nagpur 440023",
-    footer_phone:    "+91 90968 63511",
+    footer_address:  "123 Style Street, Mumbai 400050",
+    footer_phone:    "+91 98765 43210",
     footer_email:    "hello@lonazluxe.in",
-    instagram_url:   "https://www.instagram.com/lonaznagpur",
-    whatsapp_number: "919096863511",
+    instagram_url:   "https://instagram.com/lonazluxe",
+    whatsapp_number: "919876543210",
   });
 
   useEffect(() => {
-    settingsAPI.get().then(r => setSettings(s => ({ ...s, ...r.data }))).catch(() => {});
+    settingsAPI.get()
+      .then(r => setSettings(s => ({ ...s, ...r.data })))
+      .catch(() => {});
   }, []);
 
-  const whatsapp = settings.whatsapp_number || "919096863511";
+  const whatsapp = settings.whatsapp_number || "919876543210";
+
+  const SERVICE_LINKS = [
+    "Signature Haircut",
+    "Beard Sculpting",
+    "Hair Coloring",
+    "Luxury Facial",
+    "Hair Spa",
+    "Bridal Package",
+  ];
 
   return (
     <footer className="bg-forest-dark border-t border-gold/10 pt-14 pb-6">
@@ -47,11 +64,17 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links — Services links to /services page */}
           <div>
             <h4 className="font-cinzel text-[10px] tracking-[3px] text-gold mb-5 uppercase">Quick Links</h4>
             <div className="flex flex-col gap-2.5">
-              {[["Home","/"],["Services","/services-menu"],["Book Appointment","/booking"],["Courses","/courses"],["Careers","/careers"]].map(([label, href]) => (
+              {[
+                ["Home",             "/"],
+                ["Services",         "/services"],
+                ["Book Appointment", "/booking"],
+                ["Courses",          "/courses"],
+                ["Careers",          "/careers"],
+              ].map(([label, href]) => (
                 <Link key={href} href={href}
                   className="font-lora text-sm text-cream/50 hover:text-gold transition-colors">
                   {label}
@@ -60,12 +83,18 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Services */}
+          {/* Services — each links to services page */}
           <div>
             <h4 className="font-cinzel text-[10px] tracking-[3px] text-gold mb-5 uppercase">Services</h4>
             <div className="flex flex-col gap-2.5">
-              {["Signature Haircut","Beard Sculpting","Hair Coloring","Luxury Facial","Hair Spa","Bridal Package"].map(s => (
-                <p key={s} className="font-lora text-sm text-cream/50">{s}</p>
+              {SERVICE_LINKS.map(s => (
+                <Link
+                  key={s}
+                  href="/services"
+                  className="font-lora text-sm text-cream/50 hover:text-gold transition-colors"
+                >
+                  {s}
+                </Link>
               ))}
             </div>
           </div>
@@ -94,7 +123,7 @@ export default function Footer() {
 
         <div className="border-t border-gold/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="font-cinzel text-[9px] tracking-[2px] text-gold/30 uppercase">
-            © 2024 {settings.salon_name || "Lonaz Luxe Salon"}. All rights reserved.
+            © {new Date().getFullYear()} {settings.salon_name || "Lonaz Luxe Salon"}. All rights reserved.
           </p>
           <div className="flex gap-5">
             {["Privacy","Terms"].map(l => (
