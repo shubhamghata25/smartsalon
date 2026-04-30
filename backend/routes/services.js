@@ -40,13 +40,13 @@ router.get("/:id", async (req, res) => {
 
 // POST /api/services (admin)
 router.post("/", authenticate, requireAdmin, async (req, res) => {
-  const { name, description, price, duration, icon, category, category_id, image_url, sort_order } = req.body;
+  const { name, description, price, price_min, price_max, duration, slot_duration, icon, category, category_id, image_url, sort_order } = req.body;
   if (!name) return res.status(400).json({ error: "name required" });
   try {
     const { rows } = await db.query(
-      `INSERT INTO services (name,description,price,duration,icon,category,category_id,image_url,sort_order)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [name, description, price||0, duration||30, icon, category, category_id||null, image_url||null, sort_order||0]
+      `INSERT INTO services (name,description,price,price_min,price_max,duration,slot_duration,icon,category,category_id,image_url,sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+      [name, description, price||0, price_min||null, price_max||null, duration||30, slot_duration||30, icon, category, category_id||null, image_url||null, sort_order||0]
     );
     res.status(201).json(rows[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -54,17 +54,18 @@ router.post("/", authenticate, requireAdmin, async (req, res) => {
 
 // PATCH /api/services/:id (admin)
 router.patch("/:id", authenticate, requireAdmin, async (req, res) => {
-  const { name, description, price, duration, icon, category, category_id, image_url, sort_order, is_active } = req.body;
+  const { name, description, price, price_min, price_max, duration, slot_duration, icon, category, category_id, image_url, sort_order, is_active } = req.body;
   try {
     const { rows } = await db.query(
       `UPDATE services SET
          name=COALESCE($1,name), description=COALESCE($2,description),
-         price=COALESCE($3,price), duration=COALESCE($4,duration),
-         icon=COALESCE($5,icon), category=COALESCE($6,category),
-         category_id=COALESCE($7,category_id), image_url=COALESCE($8,image_url),
-         sort_order=COALESCE($9,sort_order), is_active=COALESCE($10,is_active)
-       WHERE id=$11 RETURNING *`,
-      [name, description, price, duration, icon, category, category_id, image_url, sort_order, is_active, req.params.id]
+         price=COALESCE($3,price), price_min=COALESCE($4,price_min), price_max=COALESCE($5,price_max),
+         duration=COALESCE($6,duration), slot_duration=COALESCE($7,slot_duration),
+         icon=COALESCE($8,icon), category=COALESCE($9,category),
+         category_id=COALESCE($10,category_id), image_url=COALESCE($11,image_url),
+         sort_order=COALESCE($12,sort_order), is_active=COALESCE($13,is_active)
+       WHERE id=$14 RETURNING *`,
+      [name, description, price, price_min, price_max, duration, slot_duration, icon, category, category_id, image_url, sort_order, is_active, req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: "Not found" });
     res.json(rows[0]);

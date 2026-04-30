@@ -32,11 +32,26 @@ export default function HomePage() {
     categoriesAPI.list().then(r => setCategories(r.data)).catch(() => {});
     settingsAPI.get().then(r => {
       if (r.data.salon_name) setSalonName(r.data.salon_name);
-      // Load hero media from settings keys (fast, no extra request)
+      // Try settings keys first (fast path)
       if (r.data.hero_media_url) {
         setHeroMedia({ url: r.data.hero_media_url, type: r.data.hero_media_type || "image" });
+      } else {
+        // Fallback: query hero_media table directly (covers case where
+        // settings key is empty but hero_media row exists)
+        settingsAPI.getHeroMedia().then(hRes => {
+          if (hRes.data?.url) {
+            setHeroMedia({ url: hRes.data.url, type: hRes.data.type || "image" });
+          }
+        }).catch(() => {});
       }
-    }).catch(() => {});
+    }).catch(() => {
+      // Settings failed entirely — still try hero_media table
+      settingsAPI.getHeroMedia().then(hRes => {
+        if (hRes.data?.url) {
+          setHeroMedia({ url: hRes.data.url, type: hRes.data.type || "image" });
+        }
+      }).catch(() => {});
+    });
   }, []);
 
   /* ── HERO CANVAS — only shown when no admin media ────────────────────────── */

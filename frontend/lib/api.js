@@ -1,10 +1,17 @@
 "use client";
+/**
+ * FILE: frontend/lib/api.js
+ *
+ * CRITICAL FIX: Removed all explicit { "Content-Type": "multipart/form-data" } headers.
+ * When you set this header manually, you OMIT the boundary parameter that multer requires
+ * to parse the request body. This was causing "Upload failed" on ALL file uploads.
+ * Axios automatically sets the correct Content-Type with boundary when passed a FormData object.
+ */
 import axios from "axios";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
-  timeout: 15000,
-  // Disable browser caching for all API calls so admin changes are instant
+  timeout: 30000,
   headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
 });
 
@@ -12,6 +19,12 @@ api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("ss_token");
     if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+  // If body is FormData, DELETE any manually-set Content-Type so axios sets it
+  // automatically with the correct multipart boundary
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+    delete config.headers.common?.["Content-Type"];
   }
   return config;
 });
@@ -31,17 +44,17 @@ api.interceptors.response.use(
 export default api;
 
 export const authAPI = {
-  register: (d) => api.post("/auth/register", d),
-  login:    (d) => api.post("/auth/login", d),
-  me:       ()  => api.get("/auth/me"),
+  register: (d)  => api.post("/auth/register", d),
+  login:    (d)  => api.post("/auth/login", d),
+  me:       ()   => api.get("/auth/me"),
 };
 
 export const categoriesAPI = {
-  list:         ()       => api.get("/categories"),
-  withServices: (id)     => api.get(`/categories/${id}/services`),
-  create:       (d)      => api.post("/categories", d),
-  update:       (id, d)  => api.patch(`/categories/${id}`, d),
-  delete:       (id)     => api.delete(`/categories/${id}`),
+  list:         ()      => api.get("/categories"),
+  withServices: (id)    => api.get(`/categories/${id}/services`),
+  create:       (d)     => api.post("/categories", d),
+  update:       (id, d) => api.patch(`/categories/${id}`, d),
+  delete:       (id)    => api.delete(`/categories/${id}`),
 };
 
 export const servicesAPI = {
@@ -71,65 +84,62 @@ export const bookingsAPI = {
 };
 
 export const paymentsAPI = {
-  createRazorpayOrder: (bid) => api.post("/payments/razorpay/order", { booking_id: bid }),
-  verifyRazorpay:      (d)   => api.post("/payments/razorpay/verify", d),
-  createPaytmOrder:    (bid) => api.post("/payments/paytm/order", { booking_id: bid }),
-  uploadUpiScreenshot: (fd)  => api.post("/payments/upi/upload", fd, { headers: { "Content-Type": "multipart/form-data" } }),
-  pendingUpi:          ()    => api.get("/payments/pending"),
-  verifyManual:        (id, d) => api.patch(`/payments/${id}/verify`, d),
-  list:                ()    => api.get("/payments"),
+  createRazorpayOrder: (bid)    => api.post("/payments/razorpay/order", { booking_id: bid }),
+  verifyRazorpay:      (d)      => api.post("/payments/razorpay/verify", d),
+  createPaytmOrder:    (bid)    => api.post("/payments/paytm/order", { booking_id: bid }),
+  uploadUpiScreenshot: (fd)     => api.post("/payments/upi/upload", fd),  // FormData — no Content-Type override
+  pendingUpi:          ()       => api.get("/payments/pending"),
+  verifyManual:        (id, d)  => api.patch(`/payments/${id}/verify`, d),
+  list:                ()       => api.get("/payments"),
 };
 
 export const coursesAPI = {
-  list:   ()         => api.get("/courses"),
-  get:    (id)       => api.get(`/courses/${id}`),
-  access: (id)       => api.get(`/courses/${id}/access`),
-  enroll: (id, pid)  => api.post(`/courses/${id}/enroll`, { payment_id: pid }),
-  create: (d)        => api.post("/courses", d),
-  update: (id, d)    => api.patch(`/courses/${id}`, d),
-  delete: (id)       => api.delete(`/courses/${id}`),
+  list:   ()        => api.get("/courses"),
+  get:    (id)      => api.get(`/courses/${id}`),
+  access: (id)      => api.get(`/courses/${id}/access`),
+  enroll: (id, pid) => api.post(`/courses/${id}/enroll`, { payment_id: pid }),
+  create: (d)       => api.post("/courses", d),
+  update: (id, d)   => api.patch(`/courses/${id}`, d),
+  delete: (id)      => api.delete(`/courses/${id}`),
 };
 
 export const careersAPI = {
-  jobs:              ()        => api.get("/careers/jobs"),
-  createJob:         (d)       => api.post("/careers/jobs", d),
-  updateJob:         (id, d)   => api.patch(`/careers/jobs/${id}`, d),
-  deleteJob:         (id)      => api.delete(`/careers/jobs/${id}`),
-  apply:             (fd)      => api.post("/careers/apply", fd, { headers: { "Content-Type": "multipart/form-data" } }),
-  applications:      ()        => api.get("/careers/applications"),
-  updateApplication: (id, s)   => api.patch(`/careers/applications/${id}`, { status: s }),
+  jobs:              ()       => api.get("/careers/jobs"),
+  createJob:         (d)      => api.post("/careers/jobs", d),
+  updateJob:         (id, d)  => api.patch(`/careers/jobs/${id}`, d),
+  deleteJob:         (id)     => api.delete(`/careers/jobs/${id}`),
+  apply:             (fd)     => api.post("/careers/apply", fd),  // FormData — no Content-Type override
+  applications:      ()       => api.get("/careers/applications"),
+  updateApplication: (id, s)  => api.patch(`/careers/applications/${id}`, { status: s }),
 };
 
 export const offersAPI = {
-  list:   ()          => api.get("/offers"),
-  all:    ()          => api.get("/offers/all"),
-  create: (fd)        => api.post("/offers", fd, { headers: { "Content-Type": "multipart/form-data" } }),
-  update: (id, fd)    => api.patch(`/offers/${id}`, fd, { headers: { "Content-Type": "multipart/form-data" } }),
-  delete: (id)        => api.delete(`/offers/${id}`),
+  list:   ()         => api.get("/offers"),
+  all:    ()         => api.get("/offers/all"),
+  create: (fd)       => api.post("/offers", fd),          // FormData
+  update: (id, fd)   => api.patch(`/offers/${id}`, fd),   // FormData
+  delete: (id)       => api.delete(`/offers/${id}`),
 };
 
 export const videosAPI = {
-  list:   ()          => api.get("/videos"),
-  create: (d)         => api.post("/videos", d),
-  update: (id, d)     => api.patch(`/videos/${id}`, d),
-  delete: (id)        => api.delete(`/videos/${id}`),
+  list:   ()         => api.get("/videos"),
+  create: (d)        => api.post("/videos", d),
+  update: (id, d)    => api.patch(`/videos/${id}`, d),
+  delete: (id)       => api.delete(`/videos/${id}`),
 };
 
 export const settingsAPI = {
-  get:            ()   => api.get("/settings"),
-  update:         (d)  => api.patch("/settings", d),
-  uploadLogo:     (fd) => api.post("/settings/logo", fd, { headers: { "Content-Type": "multipart/form-data" } }),
-  getHeroMedia:   ()   => api.get("/settings/hero-media"),
-  uploadHeroMedia:(fd, type) =>
-    api.post(`/settings/hero-media?type=${type}`, fd, { headers: { "Content-Type": "multipart/form-data" } }),
-  clearHeroMedia: ()   => api.delete("/settings/hero-media"),
+  get:            ()          => api.get("/settings"),
+  update:         (d)         => api.patch("/settings", d),
+  uploadLogo:     (fd)        => api.post("/settings/logo", fd),         // FormData
+  getHeroMedia:   ()          => api.get("/settings/hero-media"),
+  uploadHeroMedia:(fd, type)  => api.post(`/settings/hero-media?type=${type}`, fd), // FormData
+  clearHeroMedia: ()          => api.delete("/settings/hero-media"),
 };
 
 export const uploadAPI = {
-  image: (fd, folder = "lonaz-luxe/general") =>
-    api.post(`/upload/image?folder=${folder}`, fd, { headers: { "Content-Type": "multipart/form-data" } }),
-  video: (fd, folder = "lonaz-luxe/videos") =>
-    api.post(`/upload/video?folder=${folder}`, fd, { headers: { "Content-Type": "multipart/form-data" } }),
+  image: (fd, folder = "lonaz-luxe/general") => api.post(`/upload/image?folder=${folder}`, fd),  // FormData
+  video: (fd, folder = "lonaz-luxe/videos")  => api.post(`/upload/video?folder=${folder}`, fd),  // FormData
 };
 
 export const contactsAPI = {

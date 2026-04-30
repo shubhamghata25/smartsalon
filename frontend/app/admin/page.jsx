@@ -37,7 +37,7 @@ const SC = { confirmed:"#2E7D32", pending:"#9B8B7A", completed:"#C9A84C",
              new:"#C9A84C", reviewed:"#9B8B7A", shortlisted:"#2E7D32", rejected:"#C62828" };
 
 const EMPTY = {
-  svc:  { name:"", description:"", price:"", duration:"", slot_duration:"30", icon:"✂️", category:"", category_id:"", image_url:"", sort_order:0 },
+  svc:  { name:"", description:"", price:"", price_min:"", price_max:"", duration:"", slot_duration:"30", icon:"✂️", category:"", category_id:"", image_url:"", sort_order:0 },
   sub:  { service_id:"", name:"", price:"", duration:"", discount_price:"", description:"", image_url:"", sort_order:0 },
   cat:  { name:"", description:"", image_url:"", sort_order:0 },
   crs:  { title:"", description:"", price:"", offer_price:"", duration_hrs:"", lesson_count:"", tag:"", video_url:"" },
@@ -419,7 +419,9 @@ export default function AdminPage() {
                   onSave={()=>crudSave("svc",servicesAPI.create,(id,d)=>servicesAPI.update(id,d),"services")}
                   onCancel={()=>toggleForm("svc")}>
                   <FI label="Name" fKey="svc" subKey="name" required ph="Service name"/>
-                  <FI label="Price ₹" fKey="svc" subKey="price" type="number" ph="599"/>
+                  <FI label="Price ₹ (base)" fKey="svc" subKey="price" type="number" ph="599"/>
+                  <FI label="Price Range Min ₹" fKey="svc" subKey="price_min" type="number" ph="199"/>
+                  <FI label="Price Range Max ₹" fKey="svc" subKey="price_max" type="number" ph="2999"/>
                   <FI label="Duration (min)" fKey="svc" subKey="duration" type="number" ph="45"/>
                   <FI label="Slot Duration (min)" fKey="svc" subKey="slot_duration" type="number" ph="30" />
                   <FI label="Icon (emoji)" fKey="svc" subKey="icon" ph="✂️"/>
@@ -447,7 +449,7 @@ export default function AdminPage() {
                       </div>
                     </div>
                     <div style={{display:"flex",gap:6}}>
-                      <EditBtn onClick={()=>toggleForm("svc",s.id,{name:s.name,description:s.description||"",price:s.price,duration:s.duration,slot_duration:s.slot_duration||30,icon:s.icon||"✂️",category:s.category||"",category_id:s.category_id||"",image_url:s.image_url||"",sort_order:s.sort_order||0})}/>
+                      <EditBtn onClick={()=>toggleForm("svc",s.id,{name:s.name,description:s.description||"",price:s.price,price_min:s.price_min||"",price_max:s.price_max||"",duration:s.duration,slot_duration:s.slot_duration||30,icon:s.icon||"✂️",category:s.category||"",category_id:s.category_id||"",image_url:s.image_url||"",sort_order:s.sort_order||0})}/>
                       <DelBtn onClick={()=>servicesAPI.delete(s.id).then(()=>{setServices(p=>p.filter(x=>x.id!==s.id));toast.success("Removed")}).catch(()=>toast.error("Failed"))}/>
                     </div>
                   </div>
@@ -855,7 +857,6 @@ export default function AdminPage() {
                     } else {
                       setHeroMedia({ url: "", type: "image" });
                     }
-                    toast.success("Hero media saved!");
                   }}
                 />
               </div>

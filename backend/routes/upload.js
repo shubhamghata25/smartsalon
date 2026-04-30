@@ -1,18 +1,18 @@
 /**
- * FILE: backend/routes/upload.js [FIXED]
- * Uses cloudinary v1 + multer-storage-cloudinary v4 (compatible pair)
- * Falls back to local disk if Cloudinary not configured
+ * FILE: backend/routes/upload.js  [NEW]
+ * Cloudinary image/video upload — returns secure URL
+ * Falls back to local multer if Cloudinary not configured
  */
 const router = require("express").Router();
 const { authenticate, requireAdmin } = require("../middleware/auth");
 const multer = require("multer");
-const path   = require("path");
-const fs     = require("fs");
 
+// Try to load Cloudinary — optional dependency
 let cloudinary, CloudinaryStorage;
 try {
   cloudinary = require("cloudinary").v2;
-  CloudinaryStorage = require("multer-storage-cloudinary").CloudinaryStorage;
+  const pkg = require("multer-storage-cloudinary");
+  CloudinaryStorage = pkg.CloudinaryStorage;
 } catch (e) {}
 
 const isCloudinaryConfigured = () =>
@@ -21,7 +21,8 @@ const isCloudinaryConfigured = () =>
   process.env.CLOUDINARY_API_KEY &&
   process.env.CLOUDINARY_API_SECRET;
 
-function getUploader(folder = "lonaz-luxe/general") {
+// Build the appropriate multer instance
+function getUploader(folder = "lonaz-luxe") {
   if (isCloudinaryConfigured()) {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -30,16 +31,13 @@ function getUploader(folder = "lonaz-luxe/general") {
     });
     const storage = new CloudinaryStorage({
       cloudinary,
-      params: {
-        folder,
-        allowed_formats: ["jpg","jpeg","png","webp","gif","mp4","mov"],
-        resource_type: "auto",
-      },
+      params: { folder, allowed_formats: ["jpg","jpeg","png","webp","mp4","mov"] },
     });
     return multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
   }
-
-  // Local disk fallback
+  // Fallback: local disk
+  const path = require("path");
+  const fs   = require("fs");
   const diskStorage = multer.diskStorage({
     destination: (req, file, cb) => {
       const dir = path.join(__dirname, `../uploads/${folder}`);
@@ -57,10 +55,12 @@ function getUploader(folder = "lonaz-luxe/general") {
 // POST /api/upload/image
 router.post("/image", authenticate, requireAdmin, (req, res) => {
   const folder = req.query.folder || "lonaz-luxe/general";
-  getUploader(folder).single("file")(req, res, (err) => {
+  const upload = getUploader(folder);
+  upload.single("file")(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    const url = req.file.path ||
+
+    const url = req.file.path || // Cloudinary returns .path as secure_url
       `${process.env.BACKEND_URL || ""}/uploads/${folder}/${req.file.filename}`;
     res.json({ url, filename: req.file.filename || req.file.public_id });
   });
@@ -69,11 +69,11 @@ router.post("/image", authenticate, requireAdmin, (req, res) => {
 // POST /api/upload/video
 router.post("/video", authenticate, requireAdmin, (req, res) => {
   const folder = req.query.folder || "lonaz-luxe/videos";
-  getUploader(folder).single("file")(req, res, (err) => {
+  const upload = getUploader(folder);
+  upload.single("file")(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    const url = req.file.path ||
-      `${process.env.BACKEND_URL || ""}/uploads/${folder}/${req.file.filename}`;
+    const url = req.file.path || `${process.env.BACKEND_URL || ""}/uploads/${folder}/${req.file.filename}`;
     res.json({ url, filename: req.file.filename || req.file.public_id });
   });
 });
